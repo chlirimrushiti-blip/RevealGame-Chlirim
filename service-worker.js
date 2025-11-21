@@ -1,4 +1,4 @@
-const CACHE_NAME = 'qix-reveal-v2';
+const CACHE_NAME = 'qix-reveal-v3';
 
 const ASSETS = [
   './',
@@ -56,4 +56,5 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
 
