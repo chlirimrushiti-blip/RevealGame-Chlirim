@@ -751,14 +751,29 @@
         ctx.fillText("ENTER / TAP per ricominciare dal Level 1",
                      WIDTH / 2 - 190, HEIGHT / 2 + 30);
       } else if (levelComplete) {
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
-        ctx.fillRect(0, 0, WIDTH, HEIGHT);
-        ctx.fillStyle = "lime";
-        ctx.font = "32px sans-serif";
-        ctx.fillText("LEVEL COMPLETE!", WIDTH / 2 - 140, HEIGHT / 2);
-        ctx.font = "18px sans-serif";
-        ctx.fillText("SPAZIO / ENTER / TAP per continuare",
-                     WIDTH / 2 - 185, HEIGHT / 2 + 30);
+
+  // Mostra immagine completa (senza nero)
+  if (bgLoaded) {
+    ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT);
+  } else {
+    ctx.fillStyle = "#222";
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  }
+
+  // Overlay trasparente
+  ctx.fillStyle = "rgba(0,0,0,0.3)";
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+  // Messaggi centrati
+  ctx.fillStyle = "lime";
+  ctx.font = "36px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("LEVEL COMPLETE!", WIDTH / 2, HEIGHT / 2 - 20);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "20px sans-serif";
+  ctx.fillText("TAP or ENTER to continue", WIDTH / 2, HEIGHT / 2 + 20);
+
       } else if (allLevelsComplete) {
         ctx.fillStyle = "rgba(0,0,0,0.5)";
         ctx.fillRect(0, 0, WIDTH, HEIGHT);
@@ -793,3 +808,4 @@
 
 </body>
 </html>
+
