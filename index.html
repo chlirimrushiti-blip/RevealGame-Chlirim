@@ -752,39 +752,32 @@
                      WIDTH / 2 - 190, HEIGHT / 2 + 30);
       } else if (levelComplete) {
 
-  // Mostra immagine completa (senza nero)
-  if (bgLoaded) {
-    ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT);
-  } else {
-    ctx.fillStyle = "#222";
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
-  }
-
-  // Overlay trasparente
-  ctx.fillStyle = "rgba(0,0,0,0.3)";
-  ctx.fillRect(0, 0, WIDTH, HEIGHT);
-
-  // Messaggi centrati
-  ctx.fillStyle = "lime";
-  ctx.font = "36px sans-serif";
-  ctx.textAlign = "center";
-  ctx.fillText("LEVEL COMPLETE!", WIDTH / 2, HEIGHT / 2 - 20);
-
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "20px sans-serif";
-  ctx.fillText("TAP or ENTER to continue", WIDTH / 2, HEIGHT / 2 + 20);
-
-      } else if (allLevelsComplete) {
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
-        ctx.fillRect(0, 0, WIDTH, HEIGHT);
-        ctx.fillStyle = "cyan";
-        ctx.font = "32px sans-serif";
-        ctx.fillText("ALL LEVELS COMPLETE!", WIDTH / 2 - 190, HEIGHT / 2);
-        ctx.font = "18px sans-serif";
-        ctx.fillText("ENTER / TAP per ricominciare dal Level 1",
-                     WIDTH / 2 - 190, HEIGHT / 2 + 30);
-      }
+if (levelComplete) {
+    // Mostra immagine COMPLETA (senza blocchi neri)
+    if (bgLoaded) {
+      ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT);
+    } else {
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, WIDTH, HEIGHT);
     }
+
+    // Leggera ombra per rendere leggibile il testo
+    ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+    // Testo
+    ctx.fillStyle = "lime";
+    ctx.font = "40px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("LEVEL COMPLETE!", WIDTH / 2, HEIGHT / 2 - 20);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "22px sans-serif";
+    ctx.fillText("Tap / Enter per continuare", WIDTH / 2, HEIGHT / 2 + 20);
+
+    return; // <--- IMPORTANTISSIMO (blocca il resto del draw)
+}
+
 
     function loop() {
       update();
@@ -808,4 +801,5 @@
 
 </body>
 </html>
+
 
