@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <title>Qix Reveal – Stable</title>
-<link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-<meta name="theme-color" content="#000000">
-
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- PWA (lascia questi se già usavi manifest / icone) -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  <meta name="theme-color" content="#000000">
 
   <style>
     html, body {
@@ -592,211 +593,209 @@
       updateBullets();
     }
 
-function draw() {
-  // 👉 SE IL LIVELLO È COMPLETATO: mostra SOLO l'immagine intera
-  if (levelComplete) {
-    if (bgLoaded) {
-      ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT);
-    } else {
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, WIDTH, HEIGHT);
-    }
+    // --- DRAW (con reveal totale a fine livello) ---
+    function draw() {
+      // 👉 SE IL LIVELLO È COMPLETATO: mostra SOLO l'immagine intera
+      if (levelComplete) {
+        if (bgLoaded) {
+          ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT);
+        } else {
+          ctx.fillStyle = "#000";
+          ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        }
 
-    // leggero scurimento per rendere il testo leggibile
-    ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        // leggero scurimento per rendere il testo leggibile
+        ctx.fillStyle = "rgba(0, 0, 0, 0.35)";
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-    // testo centrale
-    ctx.fillStyle = "lime";
-    ctx.font = "40px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("LEVEL COMPLETE!", WIDTH / 2, HEIGHT / 2 - 20);
+        // testo centrale
+        ctx.fillStyle = "lime";
+        ctx.font = "40px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("LEVEL COMPLETE!", WIDTH / 2, HEIGHT / 2 - 20);
 
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "22px sans-serif";
-    ctx.fillText("Tap / Enter per continuare", WIDTH / 2, HEIGHT / 2 + 20);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "22px sans-serif";
+        ctx.fillText("Tap / Enter per continuare", WIDTH / 2, HEIGHT / 2 + 20);
 
-    return; // 🔥 importantissimo: NON disegnare il resto
-  }
-
-  // SFONDO (se il livello NON è completato)
-  if (bgLoaded) ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT);
-  else { ctx.fillStyle = "#222"; ctx.fillRect(0, 0, WIDTH, HEIGHT); }
-
-  // scurisco fuori area
-  ctx.fillStyle = "rgba(0,0,0,0.85)";
-  ctx.fillRect(0, 0, WIDTH, playY);
-  ctx.fillRect(0, playY + playHeight, WIDTH, HEIGHT - (playY + playHeight));
-  ctx.fillRect(0, playY, playX, playHeight);
-  ctx.fillRect(playX + playWidth, playY, WIDTH - (playX + playWidth), playHeight);
-
-  // celle (blocchi + trail)
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      const state = grid[y][x];
-      const px = playX + x * cellSize;
-      const py = playY + y * cellSize;
-      if (state === CELL_UNCLAIMED) {
-        ctx.fillStyle = "black";
-        ctx.fillRect(px, py, cellSize, cellSize);
-      } else if (state === CELL_TRAIL) {
-        ctx.fillStyle = "rgba(0,180,255,0.8)";
-        ctx.fillRect(px, py, cellSize, cellSize);
+        ctx.textAlign = "left";
+        return; // 🔥 importantissimo: NON disegnare il resto
       }
+
+      // SFONDO (se il livello NON è completato)
+      if (bgLoaded) ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT);
+      else { ctx.fillStyle = "#222"; ctx.fillRect(0, 0, WIDTH, HEIGHT); }
+
+      // scurisco fuori area
+      ctx.fillStyle = "rgba(0,0,0,0.85)";
+      ctx.fillRect(0, 0, WIDTH, playY);
+      ctx.fillRect(0, playY + playHeight, WIDTH, HEIGHT - (playY + playHeight));
+      ctx.fillRect(0, playY, playX, playHeight);
+      ctx.fillRect(playX + playWidth, playY, WIDTH - (playX + playWidth), playHeight);
+
+      // celle
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const state = grid[y][x];
+          const px = playX + x * cellSize;
+          const py = playY + y * cellSize;
+          if (state === CELL_UNCLAIMED) {
+            ctx.fillStyle = "black";
+            ctx.fillRect(px, py, cellSize, cellSize);
+          } else if (state === CELL_TRAIL) {
+            ctx.fillStyle = "rgba(0,180,255,0.8)";
+            ctx.fillRect(px, py, cellSize, cellSize);
+          }
+        }
+      }
+
+      // ragno nemico
+      ctx.save();
+      ctx.translate(enemy.x, enemy.y);
+      ctx.fillStyle = "#00ff99";
+      ctx.beginPath();
+      ctx.arc(0, 0, enemy.size / 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#003322";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const legLen = enemy.size;
+      ctx.moveTo(-3, -enemy.size / 4); ctx.lineTo(-legLen, -legLen / 2);
+      ctx.moveTo(3, -enemy.size / 4);  ctx.lineTo(legLen, -legLen / 2);
+      ctx.moveTo(-3, 0);               ctx.lineTo(-legLen, 0);
+      ctx.moveTo(3, 0);                ctx.lineTo(legLen, 0);
+      ctx.moveTo(-3, enemy.size / 4);  ctx.lineTo(-legLen, legLen / 2);
+      ctx.moveTo(3, enemy.size / 4);   ctx.lineTo(legLen, legLen / 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // player
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // proiettili
+      ctx.fillStyle = "orange";
+      for (const b of bullets) {
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // cornice area
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(playX, playY, playWidth, playHeight);
+
+      // ===== HUD =====
+      const hudHeight = 70;
+      ctx.fillStyle = "rgba(0,0,0,0.65)";
+      ctx.fillRect(0, 0, WIDTH, hudHeight);
+
+      // LEVEL + cuori
+      ctx.fillStyle = "#00e0ff";
+      ctx.font = "16px sans-serif";
+      ctx.textAlign = "left";
+      const levelIndexText = "LEVEL " + (currentLevelIndex + 1) + " / " + levels.length;
+      ctx.fillText(levelIndexText, 14, 24);
+      const levelTextWidth = ctx.measureText(levelIndexText).width;
+
+      // CUORI GRANDI allineati
+      const heartSize = 16;
+      const heartY = 9;
+      let heartX = 14 + levelTextWidth + 30;
+
+      ctx.fillStyle = "#ff2222";
+      ctx.strokeStyle = "#660000";
+      ctx.lineWidth = 1.8;
+
+      for (let i = 0; i < lives; i++) {
+        ctx.beginPath();
+        ctx.moveTo(heartX, heartY + heartSize * 0.3);
+        ctx.bezierCurveTo(
+          heartX - heartSize, heartY - heartSize * 0.2,
+          heartX - heartSize, heartY + heartSize,
+          heartX, heartY + heartSize
+        );
+        ctx.bezierCurveTo(
+          heartX + heartSize, heartY + heartSize,
+          heartX + heartSize, heartY - heartSize * 0.2,
+          heartX, heartY + heartSize * 0.3
+        );
+        ctx.fill();
+        ctx.stroke();
+        heartX += heartSize * 2.3;
+      }
+
+      // NOME LIVELLO
+      ctx.fillStyle = "#ffd700";
+      ctx.font = "22px sans-serif";
+      const nameText = levels[currentLevelIndex].name;
+      const nameWidth = ctx.measureText(nameText).width;
+      ctx.fillText(nameText, WIDTH / 2 - nameWidth / 2, 28);
+
+      // INFO PROGRESS
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "14px sans-serif";
+      const infoText = "Revealed " + revealPercent.toFixed(1) + "%  |  Target " + targetPercent + "%";
+      const infoWidth = ctx.measureText(infoText).width;
+      ctx.fillText(infoText, WIDTH / 2 - infoWidth / 2, 48);
+
+      // BARRA PROGRESSO
+      const barWidth = 260;
+      const barHeight = 10;
+      const barX = WIDTH / 2 - barWidth / 2;
+      const barY = 53;
+
+      const bgGrad = ctx.createLinearGradient(barX, barY, barX + barWidth, barY);
+      bgGrad.addColorStop(0, "rgba(255,255,255,0.15)");
+      bgGrad.addColorStop(1, "rgba(80,80,80,0.3)");
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(barX, barY, barWidth, barHeight);
+
+      const progressRatio = Math.min(revealPercent / targetPercent, 1);
+      const progGrad = ctx.createLinearGradient(barX, barY, barX + barWidth, barY);
+      if (progressRatio < 0.5) {
+        progGrad.addColorStop(0, "#ff4444");
+        progGrad.addColorStop(1, "#ffaa00");
+      } else {
+        progGrad.addColorStop(0, "#44ff44");
+        progGrad.addColorStop(1, "#88ffcc");
+      }
+      ctx.fillStyle = progGrad;
+      ctx.fillRect(barX, barY, barWidth * progressRatio, barHeight);
+
+      ctx.strokeStyle = "rgba(0,0,0,0.9)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(barX, barY, barWidth, barHeight);
+      // ===== FINE HUD =====
+
+      // OVERLAY GAME OVER / ALL LEVELS COMPLETE
+      if (gameOver) {
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        ctx.fillStyle = "red";
+        ctx.font = "32px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", WIDTH / 2, HEIGHT / 2);
+        ctx.font = "18px sans-serif";
+        ctx.fillText("ENTER / TAP per ricominciare dal Level 1",
+                     WIDTH / 2, HEIGHT / 2 + 30);
+      } else if (allLevelsComplete) {
+        ctx.fillStyle = "rgba(0,0,0,0.5)";
+        ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        ctx.fillStyle = "cyan";
+        ctx.font = "32px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("ALL LEVELS COMPLETE!", WIDTH / 2, HEIGHT / 2);
+        ctx.font = "18px sans-serif";
+        ctx.fillText("ENTER / TAP per ricominciare dal Level 1",
+                     WIDTH / 2, HEIGHT / 2 + 30);
+      }
+
+      ctx.textAlign = "left";
     }
-  }
-
-  // ragno nemico
-  ctx.save();
-  ctx.translate(enemy.x, enemy.y);
-  ctx.fillStyle = "#00ff99";
-  ctx.beginPath();
-  ctx.arc(0, 0, enemy.size / 2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "#003322";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  const legLen = enemy.size;
-  ctx.moveTo(-3, -enemy.size / 4); ctx.lineTo(-legLen, -legLen / 2);
-  ctx.moveTo(3, -enemy.size / 4);  ctx.lineTo(legLen, -legLen / 2);
-  ctx.moveTo(-3, 0);               ctx.lineTo(-legLen, 0);
-  ctx.moveTo(3, 0);                ctx.lineTo(legLen, 0);
-  ctx.moveTo(-3, enemy.size / 4);  ctx.lineTo(-legLen, legLen / 2);
-  ctx.moveTo(3, enemy.size / 4);   ctx.lineTo(legLen, legLen / 2);
-  ctx.stroke();
-  ctx.restore();
-
-  // player
-  ctx.fillStyle = "red";
-  ctx.beginPath();
-  ctx.arc(player.x, player.y, player.size / 2, 0, Math.PI * 2);
-  ctx.fill();
-
-  // proiettili
-  ctx.fillStyle = "orange";
-  for (const b of bullets) {
-    ctx.beginPath();
-    ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // cornice area
-  ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = 3;
-  ctx.strokeRect(playX, playY, playWidth, playHeight);
-
-  // ===== HUD =====
-  const hudHeight = 70;
-  ctx.fillStyle = "rgba(0,0,0,0.65)";
-  ctx.fillRect(0, 0, WIDTH, hudHeight);
-
-  // LEVEL + cuori
-  ctx.fillStyle = "#00e0ff";
-  ctx.font = "16px sans-serif";
-  const levelIndexText = "LEVEL " + (currentLevelIndex + 1) + " / " + levels.length;
-  ctx.textAlign = "left";
-  ctx.fillText(levelIndexText, 14, 24);
-  const levelTextWidth = ctx.measureText(levelIndexText).width;
-
-  // CUORI GRANDI allineati
-  const heartSize = 16;
-  const heartY = 9;
-  let heartX = 14 + levelTextWidth + 30;
-
-  ctx.fillStyle = "#ff2222";
-  ctx.strokeStyle = "#660000";
-  ctx.lineWidth = 1.8;
-
-  for (let i = 0; i < lives; i++) {
-    ctx.beginPath();
-    ctx.moveTo(heartX, heartY + heartSize * 0.3);
-    ctx.bezierCurveTo(
-      heartX - heartSize, heartY - heartSize * 0.2,
-      heartX - heartSize, heartY + heartSize,
-      heartX, heartY + heartSize
-    );
-    ctx.bezierCurveTo(
-      heartX + heartSize, heartY + heartSize,
-      heartX + heartSize, heartY - heartSize * 0.2,
-      heartX, heartY + heartSize * 0.3
-    );
-    ctx.fill();
-    ctx.stroke();
-    heartX += heartSize * 2.3;
-  }
-
-  // NOME LIVELLO
-  ctx.fillStyle = "#ffd700";
-  ctx.font = "22px sans-serif";
-  const nameText = levels[currentLevelIndex].name;
-  const nameWidth = ctx.measureText(nameText).width;
-  ctx.fillText(nameText, WIDTH / 2 - nameWidth / 2, 28);
-
-  // INFO PROGRESS
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "14px sans-serif";
-  const infoText = "Revealed " + revealPercent.toFixed(1) + "%  |  Target " + targetPercent + "%";
-  const infoWidth = ctx.measureText(infoText).width;
-  ctx.fillText(infoText, WIDTH / 2 - infoWidth / 2, 48);
-
-  // BARRA PROGRESSO
-  const barWidth = 260;
-  const barHeight = 10;
-  const barX = WIDTH / 2 - barWidth / 2;
-  const barY = 53;
-
-  const bgGrad = ctx.createLinearGradient(barX, barY, barX + barWidth, barY);
-  bgGrad.addColorStop(0, "rgba(255,255,255,0.15)");
-  bgGrad.addColorStop(1, "rgba(80,80,80,0.3)");
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(barX, barY, barWidth, barHeight);
-
-  const progressRatio = Math.min(revealPercent / targetPercent, 1);
-  const progGrad = ctx.createLinearGradient(barX, barY, barX + barWidth, barY);
-  if (progressRatio < 0.5) {
-    progGrad.addColorStop(0, "#ff4444");
-    progGrad.addColorStop(1, "#ffaa00");
-  } else {
-    progGrad.addColorStop(0, "#44ff44");
-    progGrad.addColorStop(1, "#88ffcc");
-  }
-  ctx.fillStyle = progGrad;
-  ctx.fillRect(barX, barY, barWidth * progressRatio, barHeight);
-
-  ctx.strokeStyle = "rgba(0,0,0,0.9)";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(barX, barY, barWidth, barHeight);
-  // ===== FINE HUD =====
-
-  // OVERLAY GAME OVER / ALL LEVELS COMPLETE
-  ctx.textAlign = "left"; // per non incasinare altri testi dopo
-  if (gameOver) {
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
-    ctx.fillStyle = "red";
-    ctx.font = "32px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("GAME OVER", WIDTH / 2, HEIGHT / 2);
-    ctx.font = "18px sans-serif";
-    ctx.fillText("ENTER / TAP per ricominciare dal Level 1",
-                 WIDTH / 2, HEIGHT / 2 + 30);
-  } else if (allLevelsComplete) {
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.fillRect(0, 0, WIDTH, HEIGHT);
-    ctx.fillStyle = "cyan";
-    ctx.font = "32px sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("ALL LEVELS COMPLETE!", WIDTH / 2, HEIGHT / 2);
-    ctx.font = "18px sans-serif";
-    ctx.fillText("ENTER / TAP per ricominciare dal Level 1",
-                 WIDTH / 2, HEIGHT / 2 + 30);
-  }
-
-  // reset textAlign di default
-  ctx.textAlign = "left";
-}
-
-
 
     function loop() {
       update();
@@ -807,19 +806,17 @@ function draw() {
     initLevel();
     loop();
   </script>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('service-worker.js')
-        .catch(function (err) {
-          console.log('Service worker registration failed:', err);
-        });
-    });
-  }
-</script>
 
+  <!-- Registrazione service worker PWA (se lo usi) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('service-worker.js')
+          .catch(function (err) {
+            console.log('Service worker registration failed:', err);
+          });
+      });
+    }
+  </script>
 </body>
 </html>
-
-
-
